@@ -83,7 +83,8 @@ function check() {
   if (!existsSync(skillMd)) problems.push('缺少 SKILL.md');
   else {
     const txt = readFileSync(skillMd, 'utf8');
-    const fm = /^---\n([\s\S]*?)\n---/.exec(txt);
+    // 容忍 CRLF：Windows 检出后行尾是 \r\n，不能只匹配 \n
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
     if (!fm) problems.push('SKILL.md 缺少 frontmatter');
     else {
       const head = fm[1];
