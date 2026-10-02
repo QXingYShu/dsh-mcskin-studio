@@ -1,0 +1,41 @@
+{
+  "name": "@dsh-external/dsh-mcskin-studio",
+  "version": "0.1.0",
+  "description": "Skin Studio panel + agent tools for drawing and reviewing Minecraft skins with the mcskin-artist skill.",
+  "type": "module",
+  "license": "MIT",
+  "icon": "./icon.svg",
+  "meta": {
+    "title": {
+      "en": "Minecraft Skin Studio",
+      "zh": "Minecraft 皮肤工作台"
+    },
+    "description": {
+      "en": "Run mcskin-artist lint scoring and multi-view/multi-pose 3D review renders from the settings panel, and give the agent skin_lint / skin_render tools.",
+      "zh": "在设置面板里跑 mcskin-artist 的质量评分与多视角多姿态渲染审查，并为 agent 提供 skin_lint / skin_render 工具。"
+    }
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "locale/*.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": ["@deepseek-ai/dsh-client-ui-settings"]
+    }
+  }
+}

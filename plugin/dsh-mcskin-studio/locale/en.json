@@ -1,0 +1,36 @@
+{
+  "title": "Minecraft Skin Studio",
+  "description": "Run mcskin-artist lint scoring and multi-view/multi-pose 3D review renders from the settings panel, and give the agent skin_lint / skin_render tools.",
+  "tab": { "en": "Skin Studio", "zh": "皮肤工作台" },
+  "ui": {
+    "installed": { "en": "mcskin-artist installed", "zh": "mcskin-artist 已安装" },
+    "notInstalled": { "en": "mcskin-artist not installed", "zh": "mcskin-artist 未安装" },
+    "installHint": {
+      "en": "Install with: node <workspace>/tools/install_skill.mjs",
+      "zh": "安装命令：node <工作区>/tools/install_skill.mjs"
+    },
+    "filePlaceholder": {
+      "en": "Absolute path to a skin PNG, e.g. C:\\Users\\me\\skin.png",
+      "zh": "皮肤 PNG 的绝对路径，例如 C:\\Users\\me\\skin.png"
+    },
+    "runLint": { "en": "Run lint", "zh": "跑 lint 评分" },
+    "runRender": { "en": "Render views & poses", "zh": "渲染多视角/多姿态" },
+    "busy": { "en": "Working…", "zh": "处理中…" },
+    "needFile": { "en": "Enter a skin PNG path first", "zh": "请先填写皮肤 PNG 的绝对路径" },
+    "allPass": { "en": "All checks passed", "zh": "所有检查项通过" },
+    "views": { "en": "Views", "zh": "视角" },
+    "poses": { "en": "Poses", "zh": "姿态" },
+    "scoreUnit": { "en": "score", "zh": "分" },
+    "gradeUnit": { "en": "grade", "zh": "级" }
+  },
+  "tools": {
+    "skin_lint": {
+      "en": "Lint a Minecraft skin PNG (64x64 or 64x32): 13 checks, 0-100 score, A/B/C/D grade with per-check evidence. Read-only.",
+      "zh": "对 Minecraft 皮肤 PNG（64×64 或 64×32）跑质量评分：13 项检查、0-100 分、A/B/C/D 等级与逐项证据。只读。"
+    },
+    "skin_render": {
+      "en": "Render a Minecraft skin into multi-view (8) and multi-pose (4) PNG review sheets plus high-resolution texture crops.",
+      "zh": "把 Minecraft 皮肤渲染成多视角（8 张）与多姿态（4 帧）PNG 审查图集，并输出贴图高清裁切。"
+    }
+  }
+}

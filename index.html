@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minecraft 皮肤绘制工具 · 像素画板 + 实时 3D 预览</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">⛏</span>
+        <div class="brand-text">
+          <h1>Minecraft 皮肤绘制工具</h1>
+          <p id="statusLine">正在初始化…</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="btn-group" role="group" aria-label="文件">
+          <button id="btnNew" type="button">新建 64×64</button>
+          <button id="btnNewLegacy" type="button">新建 64×32</button>
+          <button id="btnOpen" type="button" class="primary">打开皮肤…</button>
+          <button id="btnSave" type="button">保存 PNG</button>
+          <button id="btnSaveLegacy" type="button" title="像素与 64×64 的左上象限一致（旧版格式）">保存 64×32</button>
+          <button id="btnShot" type="button">导出 3D 截图</button>
+        </div>
+        <div class="btn-group" role="group" aria-label="撤销重做">
+          <button id="btnUndo" type="button" title="撤销 (Ctrl+Z)">↶ 撤销</button>
+          <button id="btnRedo" type="button" title="重做 (Ctrl+Shift+Z)">↷ 重做</button>
+        </div>
+        <input type="file" id="fileInput" accept="image/png,image/*" hidden>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <!-- ============ 左：2D 编辑器 ============ -->
+      <section class="panel panel-editor" id="panelEditor">
+        <div class="panel-head">
+          <h2>① 皮肤展开图（点击拖动绘制）</h2>
+          <span class="hint" id="cursorHint">把鼠标移到画布上，这里会告诉你这个像素是哪个部位</span>
+        </div>
+
+        <div class="editor-toolbar">
+          <div class="tool-tools" id="toolTools"><!-- shell 生成 --></div>
+
+          <label class="field color-field">
+            <span>颜色</span>
+            <input type="color" id="colorInput" value="#3aa06a">
+            <input type="text" id="hexInput" class="hex" value="#3aa06a" maxlength="7" spellcheck="false">
+          </label>
+
+          <label class="field">
+            <span>笔刷</span>
+            <input type="range" id="brushRange" min="1" max="4" step="1" value="1">
+            <output id="brushOut">1</output>
+          </label>
+
+          <label class="field">
+            <span>不透明度</span>
+            <input type="range" id="alphaRange" min="0" max="255" step="1" value="255">
+            <output id="alphaOut">255</output>
+          </label>
+
+          <label class="field">
+            <span>缩放</span>
+            <input type="range" id="zoomRange" min="2" max="24" step="1" value="9">
+            <output id="zoomOut">9</output>
+          </label>
+
+          <div class="tool-toggles">
+            <button type="button" id="tglGrid" class="toggle on">网格</button>
+            <button type="button" id="tglOverlay" class="toggle on">部位标注</button>
+            <button type="button" id="tglSymmetry" class="toggle" title="左右对称绘制">对称</button>
+            <button type="button" id="tglBase" class="toggle on">基础层</button>
+            <button type="button" id="tglOuter" class="toggle on">外层面</button>
+          </div>
+
+          <label class="field">
+            <span>当前编辑层</span>
+            <select id="layerSelect">
+              <option value="base">基础层（皮肤本体）</option>
+              <option value="outer">外层面（帽子/外套/袖/裤）</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="editorCanvas" width="640" height="640"></canvas>
+          <div class="canvas-badge" id="canvasBadge">64×64</div>
+        </div>
+
+        <p class="tip" id="editorTip">
+          提示：右键 = 取色（吸管）。按住拖动可以连续画；<kbd>1</kbd>–<kbd>6</kbd> 切工具，
+          <kbd>G</kbd> 铅笔、<kbd>E</kbd> 橡皮、<kbd>F</kbd> 填充、<kbd>I</kbd> 取色，<kbd>Ctrl+Z</kbd> 撤销。
+        </p>
+      </section>
+
+      <!-- ============ 中：3D 预览 ============ -->
+      <section class="panel panel-preview" id="panelPreview">
+        <div class="panel-head">
+          <h2>② 实时 3D 立体预览</h2>
+          <span class="hint">拖拽旋转 · 滚轮缩放</span>
+        </div>
+
+        <div class="viewport" id="viewport">
+          <canvas id="glCanvas"></canvas>
+          <div class="viewport-error" id="glError" hidden></div>
+          <div class="viewport-hud" id="glHud">yaw 20° / pitch 10°</div>
+        </div>
+
+        <div class="preview-toolbar">
+          <div class="btn-group small">
+            <button type="button" id="btnRotL" title="向左转">⟲</button>
+            <button type="button" id="btnRotR" title="向右转">⟳</button>
+            <button type="button" id="btnRotU" title="抬高视角">↑</button>
+            <button type="button" id="btnRotD" title="降低视角">↓</button>
+            <button type="button" id="btnReset" title="复位视角">复位</button>
+          </div>
+
+          <label class="field">
+            <span>动画</span>
+            <select id="animSelect">
+              <option value="idle">站立呼吸</option>
+              <option value="walk">行走</option>
+              <option value="wave">挥手</option>
+              <option value="none">静止</option>
+            </select>
+          </label>
+
+          <div class="tool-toggles">
+            <button type="button" id="tglAuto" class="toggle on">自动旋转</button>
+            <button type="button" id="tglOuter3d" class="toggle on">外层面</button>
+            <button type="button" id="tglLight" class="toggle on">光照</button>
+            <button type="button" id="tglGround" class="toggle">地面</button>
+          </div>
+
+          <div class="part-visibility" id="partVis"><!-- shell 生成 --></div>
+        </div>
+      </section>
+
+      <!-- ============ 右：说明 / 部件对照 ============ -->
+      <aside class="panel panel-guide" id="panelGuide">
+        <div class="panel-head">
+          <h2>③ 贴图 ↔ 立体部位 对照</h2>
+        </div>
+        <div class="guide-body" id="guideBody">
+          <!-- shell 生成 -->
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footbar">
+      <span id="footInfo"></span>
+      <span class="spacer"></span>
+      <span id="footVersion" class="version" title="构建版本号，用于确认浏览器没有缓存旧代码"></span>
+      <span id="testReport"></span>
+    </footer>
+  </div>
+
+  <script src="js/util.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/renderer3d.js"></script>
+  <script src="js/editor2d.js"></script>
+  <script src="js/shell.js"></script>
+</body>
+
+</html>

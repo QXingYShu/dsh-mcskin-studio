@@ -1,0 +1,5 @@
+# dsh-mcskin-studio bundle patch: inserts the Host row and the Client module.
+# Install with `dsh plugin --profile <name> add <path-or-git-url>` (or plugin_manager install_bundle).
+- insert:
+    - id: mcskin-studio
+      name: '@dsh-external/dsh-mcskin-studio'

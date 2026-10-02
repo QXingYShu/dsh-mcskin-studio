@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <title>参考皮肤 3D 视觉复核</title>
+  <style>
+    body { margin: 0; background: #12151a; color: #e8edf4; font: 13px "Microsoft YaHei", sans-serif; }
+    h1 { font-size: 15px; padding: 10px 14px; margin: 0; border-bottom: 1px solid #303845; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; }
+    .cell { border: 1px solid #303845; border-radius: 8px; overflow: hidden; background: #1a2330; }
+    .cell h2 { font-size: 12px; margin: 0; padding: 5px 8px; background: #232935; border-bottom: 1px solid #303845; }
+    canvas { display: block; width: 100%; }
+    #log { padding: 8px 14px; font-size: 12px; color: #98a3b3; white-space: pre-wrap; }
+  </style>
+</head>
+
+<body>
+  <h1>参考皮肤 3D 视觉复核（苦力怕娘 64×64 / HIM 64×32 × 3 个视角）</h1>
+  <div id="log">加载中…</div>
+  <div class="grid" id="grid"></div>
+
+  <script src="../js/util.js"></script>
+  <script src="../js/rules.js"></script>
+  <script src="../js/model.js"></script>
+  <script src="../js/renderer3d.js"></script>
+  <script>
+    /* 由 tests/build_visual.mjs 注入 window.__REFS__ = [{name, dataurl, w, h}] */
+    (function () {
+      var out = { ok: false, shots: [], errors: [] };
+      window.addEventListener('error', function (e) { out.errors.push(String(e.message)); });
+
+      function loadImage(url) {
+        return new Promise(function (res, rej) {
+          var im = new Image();
+          im.onload = function () { res(im); };
+          im.onerror = function () { rej(new Error('image load failed')); };
+          im.src = url;
+        });
+      }
+
+      function report() {
+        var el = document.createElement('script');
+        el.type = 'application/json';
+        el.id = 'probe-json';
+        el.textContent = JSON.stringify(out);
+        document.body.appendChild(el);
+        document.title = out.ok ? 'VISUAL-OK ' + out.shots.length : 'VISUAL-FAIL';
+      }
+
+      var W = 420, H = 480;
+      var VIEWS = [
+        { yaw: 20, pitch: 10, tag: '默认视角(20°,10°)' },
+        { yaw: 0, pitch: 0, tag: '正视(0°,0°)' },
+        { yaw: 150, pitch: 12, tag: '背面(150°,12°)' }
+      ];
+
+      function build() {
+        var refs = window.__REFS__ || [];
+        if (!refs.length) { out.errors.push('__REFS__ 为空'); document.getElementById('log').textContent = '注入失败'; report(); return; }
+        var grid = document.getElementById('grid');
+        var jobs = refs.map(function (ref) {
+          return loadImage(ref.dataurl).then(function (img) {
+            var c = document.createElement('canvas');
+            c.width = ref.w; c.height = ref.h;
+            var cx = c.getContext('2d', { willReadFrequently: true });
+            cx.imageSmoothingEnabled = false;
+            cx.drawImage(img, 0, 0);
+            var data = cx.getImageData(0, 0, ref.w, ref.h).data;
+            return VIEWS.map(function (v) {
+              var host = document.createElement('div');
+              host.className = 'cell';
+              var h2 = document.createElement('h2');
+              h2.textContent = ref.name + ' · ' + v.tag;
+              var canvas = document.createElement('canvas');
+              canvas.width = W; canvas.height = H;
+              host.appendChild(h2); host.appendChild(canvas);
+              grid.appendChild(host);
+              var r = window.MCSKIN.renderer.create(canvas, {});
+              if (!r.ok || r.glError) { out.errors.push(ref.name + ' renderer 失败: ' + r.glError); return null; }
+              r.setShowLayer(true);
+              r.setShowBase(true);
+              r.setAnimation('none');
+              r.setAutoRotate(false);
+              r.setZoom(1);
+              r.setSkin({ width: ref.w, height: ref.h, data: data }, ref.h === 32 ? 'legacy' : 'modern');
+              r.setRotation(v.yaw, v.pitch);
+              r.render();
+              var shot = r.screenshot();
+              // 统计非背景像素
+              var t = document.createElement('canvas');
+              t.width = W; t.height = H;
+              var tctx = t.getContext('2d');
+              tctx.drawImage(canvas, 0, 0);
+              var d = tctx.getImageData(0, 0, W, H).data;
+              var opaque = 0;
+              for (var i = 3; i < d.length; i += 4) if (d[i] > 0) opaque++;
+              out.shots.push({ ref: ref.name, view: v.tag, ratio: opaque / (W * H), len: shot.length, dataurl: shot });
+              return null;
+            });
+          });
+        });
+        Promise.all(jobs).then(function () {
+          out.ok = out.shots.length === refs.length * VIEWS.length && out.shots.every(function (s) { return s.ratio > 0.03; });
+          document.getElementById('log').textContent = '完成：' + out.shots.length + ' 张，最小占比 ' +
+            Math.min.apply(null, out.shots.map(function (s) { return s.ratio; })).toFixed(3) +
+            (out.errors.length ? '\n错误：' + out.errors.join(' | ') : '');
+          report();
+        }).catch(function (e) {
+          out.errors.push('Promise 异常: ' + (e && e.message ? e.message : e));
+          document.getElementById('log').textContent = '失败：' + out.errors.join(' | ');
+          report();
+        });
+      }
+      build();
+    })();
+  </script>
+</body>
+
+</html>

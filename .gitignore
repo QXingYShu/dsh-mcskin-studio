@@ -1,0 +1,33 @@
+# dependencies / build output
+node_modules/
+*.log
+
+# harness plugin-skill installer state
+.acl-report/
+
+# generated test & review artifacts (regenerate with tools/run_tests.mjs)
+tests/out/
+tests/skill_demo/review_creeper/
+tests/skill_demo/ranger.review/
+tests/skill_demo/ranger.png.review/
+tests/skill_demo/*.png.review/
+*.dom.html
+
+# skill dependency staging (produced by tools/install_skill.mjs --dev)
+skill/mcskin-artist/lib/
+
+# reference skins shipped with the workspace (not ours to redistribute)
+# they stay in the working copy; the public repo omits them.
+/苦力怕娘.png
+/HIM.png
+
+# artwork produced by running the skill (kept in the working copy, not published)
+/gothic-catgirl/
+/nova-catgirl/
+*.crops/
+*.review/
+
+# editor scratch
+.DS_Store
+Thumbs.db
+__probe_page.html
