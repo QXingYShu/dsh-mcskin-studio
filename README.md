@@ -29,6 +29,8 @@ cd dsh-mcskin-studio
 
 # 1) 装技能（把 skill 拷进 ~/.dsh/skills/mcskin-artist，并注入它依赖的 lib/）
 node tools/install_skill.mjs
+#   想直接用仓库里的副本（改代码时），用 --dev 把依赖注入 skill/mcskin-artist/lib/：
+node tools/install_skill.mjs --dev
 
 # 2) 装插件（在 DSH 里：设置 → 插件 → 安装 bundle，或命令行）
 dsh plugin --profile <你的profile> add .
@@ -37,6 +39,15 @@ dsh plugin --profile <你的profile> add .
 
 # 3) 打开网页版绘制工具（无需服务器）
 start index.html      # Windows；macOS/Linux 用 open / xdg-open
+```
+
+命令行长这样（`skin.mjs` 在技能目录里，`--dev` 之后即可直接用）：
+
+```bash
+node skill/mcskin-artist/bin/skin.mjs new -o skin.png --template default
+node skill/mcskin-artist/bin/skin.mjs run rounds/r2.txt skin.png -o skin.png
+node skill/mcskin-artist/bin/skin.mjs lint skin.png
+node skill/mcskin-artist/bin/render.mjs skin.png -o skin.review
 ```
 
 装好后：
