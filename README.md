@@ -32,10 +32,11 @@ node tools/install_skill.mjs
 #   想直接用仓库里的副本（改代码时），用 --dev 把依赖注入 skill/mcskin-artist/lib/：
 node tools/install_skill.mjs --dev
 
-# 2) 装插件（在 DSH 里：设置 → 插件 → 安装 bundle，或命令行）
-dsh plugin --profile <你的profile> add .
+# 2) 装插件（bundle 在 plugin/dsh-mcskin-studio 子目录，必须指到那一层）
+dsh plugin --profile <profile> add ./plugin/dsh-mcskin-studio
 #   或者在 DSH 设置界面里选这个 bundle 目录安装
 #   新装入的 bundle 走 HMR 热激活，一般不需要重启
+#   注意：仓库根目录不是 bundle，直接 `add <git-url>` 不会被注册（pnpm 只会造一个无清单的包）
 
 # 3) 打开网页版绘制工具（无需服务器）
 start index.html      # Windows；macOS/Linux 用 open / xdg-open
